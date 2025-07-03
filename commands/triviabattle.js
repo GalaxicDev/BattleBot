@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { startMultiplayerGame } = require('../games/triviabattle')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,8 +25,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         if (subcommand === 'start') {
-            return await interaction.reply({ content: 'Starting an open trivia lobby is not implemented yet.' });
-            //await startMultiplayerGame(interaction);
+            //return await interaction.reply({ content: 'Starting an open trivia lobby is not implemented yet.' });
+            await startMultiplayerGame(interaction);
         }
 
         else if (subcommand === 'challenge') {
