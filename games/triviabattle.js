@@ -34,7 +34,7 @@ async function startMultiplayerGame(interaction) {
     const createLobbyEmbed = () => {
         const timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
         return new EmbedBuilder()
-            .setTitle('🧠 Trivia Battle Lobby')
+            .setTitle('Trivia Battle Lobby')
             .setDescription(
                 `Click **Join Trivia** to enter!\n` +
                 `Game starts in **${timeLeft}s**.\n\n` +
@@ -95,13 +95,13 @@ async function startMultiplayerGame(interaction) {
 
         if (lobbyPlayers.size < 2) {
             return await interaction.editReply({
-                content: '⛔ Not enough players joined the lobby. Game cancelled.',
+                content: 'Not enough players joined the lobby. Game cancelled.',
                 components: [],
             });
         }
 
         await interaction.editReply({
-            content: `✅ Starting trivia game with ${lobbyPlayers.size} players...`,
+            content: `Starting trivia game with ${lobbyPlayers.size} players...`,
             components: [],
         });
 
