@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { startMultiplayerGame } = require('../games/triviabattle')
+const { startMultiplayerGame, startChallengeGame } = require('../utils/triviaLobbyManager');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -25,7 +25,6 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         if (subcommand === 'start') {
-            //return await interaction.reply({ content: 'Starting an open trivia lobby is not implemented yet.' });
             await startMultiplayerGame(interaction);
         }
 
@@ -40,8 +39,7 @@ module.exports = {
                 return await interaction.reply({ content: 'You can’t challenge yourself!', ephemeral: true });
             }
 
-            return await interaction.reply({ content: `You have challenged ${challengedUser.username} to a trivia duel!` });
-            //await startChallengeGame(interaction, challengedUser);
+            await startChallengeGame(interaction, challengedUser);
         }
     }
 };

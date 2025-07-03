@@ -1,115 +1,133 @@
-const {
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    EmbedBuilder,
-    ComponentType,
-} = require('discord.js');
+const { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const mongoose = require("mongoose");
 
-async function startMultiplayerGame(interaction) {
-    const lobbyPlayers = new Map();
-    const lobbyId = `${interaction.guild.id}-${Date.now()}`;
-    const LOBBY_DURATION = 60_000;
-    const UPDATE_INTERVAL = 1000; // update every second
+mongoose.connect(process.env.MONGO_URI).then(r => console.log('Connected to MongoDB...'));
+const triviaSchema = new mongoose.Schema({
+    category: String,
+    difficulty: String,
+    type: String,
+    question: String,
+    correct_answer: String,
+    incorrect_answers: [String]
+});
 
-    lobbyPlayers.set(interaction.user.id, interaction.user);
+const TriviaQuestion = mongoose.model('TriviaQuestion', triviaSchema);
 
-    const getPlayerList = () =>
-        Array.from(lobbyPlayers.values()).map(user => `• ${user.username}`).join('\n') || '_None yet!_';
+// TODO: remove reply with correct answer and just show in embed
+// TODO: add timer and switch to 20sec for answer and then 5s correct answer reveal
 
-    const createRow = () => new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId(`join_trivia_${lobbyId}`)
-                .setLabel('Join Trivia')
-                .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder()
-                .setCustomId(`leave_trivia_${lobbyId}`)
-                .setLabel('Leave Trivia')
-                .setStyle(ButtonStyle.Danger)
-        );
+function getPoints(difficulty) {
+    switch (difficulty) {
+        case 'easy': return 1;
+        case 'medium': return 2;
+        case 'hard': return 3;
+        default: return 0;
+    }
+}
 
-    const endTime = Date.now() + LOBBY_DURATION;
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
 
-    const createLobbyEmbed = () => {
-        const timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-        return new EmbedBuilder()
-            .setTitle('Trivia Battle Lobby')
-            .setDescription(
-                `Click **Join Trivia** to enter!\n` +
-                `Game starts in **${timeLeft}s**.\n\n` +
-                `**Players Joined (${lobbyPlayers.size}):**\n${getPlayerList()}`
-            )
+// Accepts an optional message to edit (for challenge mode)
+async function startTriviaBattle(interaction, playerMap, roundMessage = null) {
+    if (interaction.deferred === false && interaction.replied === false) {
+        await interaction.deferReply(); // prevent UnknownInteraction error
+    }
+
+
+    const totalRounds = 5;
+    const players = new Map();
+
+    for (const [id, user] of playerMap) {
+        players.set(id, { user, score: 0});
+    }
+
+    for (let round = 0; round < totalRounds; round++) {
+        const count = await TriviaQuestion.countDocuments();
+        const random = Math.floor(Math.random() * count);
+        const questionData = await TriviaQuestion.findOne().skip(random);
+        const allAnswers = shuffle([questionData.correct_answer, ...questionData.incorrect_answers]);
+
+        const embed = new EmbedBuilder()
+            .setTitle(`Trivia Round ${round + 1}/${totalRounds}`)
+            .setDescription(`**${questionData.question}**\n\nCategory: ${questionData.category} | Difficulty: ${questionData.difficulty}\n\nYou have 30 seconds to answer`)
             .setColor(0x5865F2)
-            .setFooter({ text: `Lobby ID: ${lobbyId}` })
-            .setTimestamp();
-    };
+            .setFooter({ text: `Round ${round + 1}/${totalRounds}` });
 
-    const reply = await interaction.reply({
-        embeds: [createLobbyEmbed()],
-        components: [createRow()],
-        fetchReply: true,
-    });
+        const selectMenu = new StringSelectMenuBuilder()
+            .setCustomId(`trivia_select_${round}`)
+            .setPlaceholder('Select your answer')
+            .addOptions(
+                allAnswers.map(answer =>
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel(answer)
+                        .setValue(answer)
+                )
+            );
 
-    // Collector for buttons
-    const collector = reply.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: LOBBY_DURATION,
-        filter: i =>
-            i.customId === `join_trivia_${lobbyId}` || i.customId === `leave_trivia_${lobbyId}`,
-    });
+        const row = new ActionRowBuilder().addComponents(selectMenu);
 
-    collector.on('collect', async (i) => {
-        if (i.customId === `join_trivia_${lobbyId}`) {
-            if (lobbyPlayers.has(i.user.id)) {
-                return i.reply({ content: 'You already joined!', ephemeral: true });
-            }
-            lobbyPlayers.set(i.user.id, i.user);
-        } else if (i.customId === `leave_trivia_${lobbyId}`) {
-            if (!lobbyPlayers.has(i.user.id)) {
-                return i.reply({ content: 'You are not in the lobby!', ephemeral: true });
-            }
-            if (i.user.id === interaction.user.id) {
-                return i.reply({ content: 'The lobby creator cannot leave.', ephemeral: true });
-            }
-            lobbyPlayers.delete(i.user.id);
-        }
-
-        // Update embed with current time
-        await i.update({ embeds: [createLobbyEmbed()], components: [createRow()] });
-    });
-
-    // Accurate time updater
-    const interval = setInterval(async () => {
-        const timeLeft = endTime - Date.now();
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            collector.stop();
+        if (!roundMessage) {
+            // First round – send a new message
+            roundMessage = await interaction.editReply({
+                content: `**Round ${round + 1}/${totalRounds}**`,
+                embeds: [embed],
+                components: [row]
+            });
         } else {
-            await reply.edit({ embeds: [createLobbyEmbed()] });
-        }
-    }, UPDATE_INTERVAL);
-
-    collector.on('end', async () => {
-        clearInterval(interval);
-
-        if (lobbyPlayers.size < 2) {
-            return await interaction.editReply({
-                content: 'Not enough players joined the lobby. Game cancelled.',
-                components: [],
+            // All subsequent rounds – edit the existing message
+            await roundMessage.edit({
+                content: `**Round ${round + 1}/${totalRounds}**`,
+                embeds: [embed],
+                components: [row]
             });
         }
 
-        await interaction.editReply({
-            content: `Starting trivia game with ${lobbyPlayers.size} players...`,
-            components: [],
+
+        const answered = new Set();
+        const filter = i => i.customId === `trivia_select_${round}` && playerMap.has(i.user.id) && !answered.has(i.user.id);
+        const collector = roundMessage.createMessageComponentCollector({
+            filter,
+            time: 30000, // 30 seconds
         });
 
-        // TODO: Trigger actual game here
-        console.log('Start game with:', Array.from(lobbyPlayers.values()).map(u => u.username));
+        collector.on('collect', async (i) => {
+            if (!players.has(i.user.id)) {
+                return i.reply({ content: 'You are not a participant in this trivia battle.', ephemeral: true });
+            }
+
+            answered.add(i.user.id);
+            const player = players.get(i.user.id);
+            if (!player) return;
+
+            if (i.values[0] === questionData.correct_answer) {
+                player.score += getPoints(questionData.difficulty);
+                await i.reply({ content: `Correct! You earned ${getPoints(questionData.difficulty)} points.`, ephemeral: true });
+            } else {
+                await i.reply({ content: `Wrong! The correct answer was: ${questionData.correct_answer}`, ephemeral: true });
+            }
+        });
+
+        await new Promise(resolve => collector.on('end', resolve));
+    }
+
+    const finalScores = Array.from(players.values())
+        .sort((a, b) => b.score - a.score)
+        .map(player => `${player.user.username}: ${player.score} points`)
+        .join('\n');
+
+    const finalEmbed = new EmbedBuilder()
+        .setTitle('Trivia Battle Results')
+        .setDescription(`**Final Scores:**\n${finalScores}`)
+        .setColor(0x5865F2)
+        .setFooter({ text: 'Thanks for playing!' });
+
+    await roundMessage.edit({
+        content: null,
+        embeds: [finalEmbed],
+        components: []
     });
 }
 
-module.exports = {
-    startMultiplayerGame,
-};
+module.exports = { startTriviaBattle, getPoints, shuffle, TriviaQuestion };
