@@ -1,5 +1,33 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { startMultiplayerGeoGuess, startChallengeGeoGuess } = require('../utils/geoLobbyManager');
+const { createGameLobby, createChallengeGame } = require('../utils/lobbyManager');
+const { startGeoGuessGame } = require('../games/geoguess'); // Uncomment and implement your game logic
+
+async function startMultiplayerGeoGuess(interaction, rounds = 5) {
+    return await createGameLobby({
+        interaction,
+        gameName: 'GeoGuess',
+        joinLabel: 'Join GeoGuess',
+        leaveLabel: 'Leave Lobby',
+        minPlayers: 2,
+        onStart: async (interaction, playersMap) => {
+            await startGeoGuessGame(interaction, playersMap, rounds);
+            //await interaction.editReply({ content: 'GeoGuess game would start here!', components: [] });
+        }
+    });
+}
+
+async function startChallengeGeoGuess(interaction, challengedUser, rounds = 5) {
+    return await createChallengeGame({
+        interaction,
+        gameName: 'GeoGuess',
+        challenger: interaction.user,
+        challengedUser,
+        onAccept: async (interaction, playersMap) => {
+            await startGeoGuessGame(interaction, playersMap, rounds);
+            //await interaction.editReply({ content: 'GeoGuess challenge would start here!', components: [] });
+        }
+    });
+}
 
 module.exports = {
     data: new SlashCommandBuilder()

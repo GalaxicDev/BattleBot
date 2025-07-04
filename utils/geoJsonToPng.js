@@ -5,7 +5,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const { createCanvas } = require('canvas');
 const geojson = require('./custom.geo.json');
-const GeoGuessrQuestion = require('../models//geoGuessrModel');
+const GeoGuessQuestion = require('../models/geoGuessModel');
 
 const width = 400;
 const height = 400;
@@ -93,7 +93,7 @@ const outputDir = './outlines';
         const options = [...distractors, name].sort(() => 0.5 - Math.random());
 
         // Save to MongoDB
-        await GeoGuessrQuestion.create({
+        await GeoGuessQuestion.create({
             image: filename,
             correctAnswer: name,
             options, // you can populate these later randomly

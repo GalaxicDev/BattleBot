@@ -8,4 +8,4 @@ const geoGuessrQuestionSchema = new mongoose.Schema({
     countryName: String
 });
 
-module.exports = mongoose.model('GeoGuessrQuestion', geoGuessrQuestionSchema);
+module.exports = mongoose.model('GeoGuessQuestion', geoGuessrQuestionSchema);

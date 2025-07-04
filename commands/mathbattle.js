@@ -1,36 +1,36 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createGameLobby, createChallengeGame } = require('../utils/lobbyManager');
-const { startTriviaBattle } = require('../games/triviabattle');
+const { startMathBattle } = require('../games/mathBattle');
 
-async function startTriviaLobby(interaction, rounds = 5) {
+async function startMultiplayerGame(interaction, rounds = 5) {
     return await createGameLobby({
         interaction,
-        gameName: 'Trivia Battle',
-        joinLabel: 'Join Trivia',
+        gameName: 'Math Battle',
+        joinLabel: 'Join Battle',
         leaveLabel: 'Leave Lobby',
         minPlayers: 2,
         onStart: async (interaction, playersMap) => {
-            await startTriviaBattle(interaction, playersMap, rounds);
+            await startMathBattle(interaction, playersMap, rounds);
         }
     });
 }
 
-async function startChallengeGameHandler(interaction, challengedUser, rounds = 5) {
+async function startChallengeGame(interaction, challengedUser, rounds = 5) {
     return await createChallengeGame({
         interaction,
-        gameName: 'Trivia Battle',
+        gameName: 'Math Battle',
         challenger: interaction.user,
         challengedUser,
         onAccept: async (interaction, playersMap) => {
-            await startTriviaBattle(interaction, playersMap, rounds);
+            await startMathBattle(interaction, playersMap, rounds);
         }
     });
 }
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('triviabattle')
-        .setDescription('Start a trivia battle!')
+        .setName('mathbattle')
+        .setDescription('Play the Math Battle game!')
         .addStringOption(option =>
             option.setName('mode')
                 .setDescription('Choose game mode')
@@ -58,20 +58,17 @@ module.exports = {
         const rounds = interaction.options.getInteger('rounds') || 5;
 
         if (mode === 'start') {
-            return await startTriviaLobby(interaction, rounds);
+            return await startMultiplayerGame(interaction, rounds);
         }
 
         if (mode === 'challenge') {
             if (!user) {
                 return await interaction.reply({ content: 'You must mention a user to challenge.', ephemeral: true });
             }
-            if (user.bot) {
-                return await interaction.reply({ content: 'You can’t challenge a bot!', ephemeral: true });
-            }
             if (user.id === interaction.user.id) {
-                return await interaction.reply({ content: 'You can’t challenge yourself!', ephemeral: true });
+                return await interaction.reply({ content: 'You cannot challenge yourself.', ephemeral: true });
             }
-            return await startChallengeGameHandler(interaction, user, rounds);
+            return await startChallengeGame(interaction, user, rounds);
         }
 
         return await interaction.reply({ content: 'Invalid mode selected.', ephemeral: true });
