@@ -1,4 +1,12 @@
 require('dotenv').config();
+const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_URI).then(() => {
+    console.log('Connected to MongoDB!');
+}).catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1); // Exit if connection fails
+});
 
 const { REST, Routes, Collection} = require('discord.js');
 const fs = require('fs');
@@ -104,26 +112,43 @@ client.once(Events.ClientReady, async () => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isCommand()) return;
+    if (interaction.isCommand()) {
+        const command = client.commands.get(interaction.commandName);
 
-    const command = client.commands.get(interaction.commandName);
+        if (!command) {
+            console.error(`No command matching ${interaction.commandName} was found.`);
+            return;
+        }
 
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
-    }
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(`Error executing command ${interaction.commandName}:`, error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+            } else {
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            }
+        }
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(`Error executing command ${interaction.commandName}:`, error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-        } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    } else if (interaction.isStringSelectMenu()) {
+        try {
+            // Handle your select menu logic here
+            console.log(`Select menu triggered: ${interaction.customId}`);
+            await interaction.deferUpdate();
+        } catch (error) {
+            console.error('Error handling select menu:', error);
+            try {
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ content: 'There was an error handling the select menu.', ephemeral: true });
+                }
+            } catch (err) {
+                console.error('Failed to reply to select menu error:', err);
+            }
         }
     }
 });
+
 
 client.login(process.env.BOT_TOKEN);
 

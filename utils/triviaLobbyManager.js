@@ -1,4 +1,3 @@
-// utils/triviaLobbyManager.js
 const {
     ActionRowBuilder,
     ButtonBuilder,
@@ -33,7 +32,6 @@ async function startMultiplayerGame(interaction) {
         );
 
     const endTime = Date.now() + LOBBY_DURATION;
-
     const createLobbyEmbed = () => {
         const timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
         return new EmbedBuilder()
