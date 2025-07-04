@@ -13,7 +13,7 @@ BattleBot is a Discord bot featuring multiplayer trivia and GeoGuessr-style outl
 
 - `/triviabattle start` — Start a public trivia lobby.
 - `/triviabattle challenge <user>` — Challenge a user to a trivia duel.
-- `/geoguess mode:<start|challenge> [user] [rounds]` — Play the GeoGuessr outline game.
+- `/geoguess mode:<start|challenge> [user] [rounds]` — Play the GeoGuess outline game.
 
 ## Installation & Self-Hosting
 
