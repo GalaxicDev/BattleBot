@@ -5,7 +5,7 @@ BattleBot is a Discord bot featuring multiplayer trivia and GeoGuessr-style outl
 ## Features
 
 - **Trivia Battle**: Multiplayer trivia with lobby and 1v1 challenge modes.
-- **GeoGuessr**: Guess the country from its outline, with smart multiple-choice options.
+- **GeoGuess**: Guess the country from its outline, with smart multiple-choice options.
 - **Discord Slash Commands**: Easy-to-use commands for all features.
 - **MongoDB Integration**: Stores questions, game data, and more.
 
