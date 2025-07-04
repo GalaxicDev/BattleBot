@@ -16,6 +16,11 @@ BattleBot is a Discord bot featuring multiplayer trivia and GeoGuessr-style outl
 - `/geoguess mode:<start|challenge> [user] [rounds]` — Play the GeoGuess outline game.
 - `/geoguessleaderboard` — View the leaderboard to see who is the best Geoguess player.
 
+## Invite bot hosted by me
+```
+https://discord.com/oauth2/authorize?client_id=1390363268781965362&permissions=68608&integration_type=0&scope=bot
+```
+
 ## Installation & Self-Hosting
 
 ### Prerequisites
