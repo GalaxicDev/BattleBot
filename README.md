@@ -6,7 +6,8 @@ BattleBot is a Discord bot featuring multiplayer trivia and GeoGuessr-style outl
 
 - **Trivia Battle**: Multiplayer trivia with lobby and 1v1 challenge modes.
 - **GeoGuess**: Guess the country from its outline, with smart multiple-choice options.
-- **Discord Slash Commands**: Easy-to-use commands for all features.
+- **Math Battle**: Battle with friends over math equations to prove who is the real nerd.
+- **XP System**: Gain XP every time you play a game and answer a question to level up.
 - **MongoDB Integration**: Stores questions, game data, and more.
 
 ## Commands
@@ -15,6 +16,9 @@ BattleBot is a Discord bot featuring multiplayer trivia and GeoGuessr-style outl
 - `/trivialeaderboard` — View the leaderboard to see who is the best Trivia player.
 - `/geoguess mode:<start|challenge> [user] [rounds]` — Play the GeoGuess outline game.
 - `/geoguessleaderboard` — View the leaderboard to see who is the best Geoguess player.
+- `/mathbattle mode:<start|challenge> [user] [rounds]` — Play the Math game.
+- `/level [user]` — View yours or other people's level & XP.
+- `/levelleaderboard` — View the level leaderboard to see who got the most XP.
 
 ## Invite bot hosted by me
 ```
@@ -53,8 +57,12 @@ BOT_STATUS=
 ACTIVITY_TYPE=
 ACTIVITY_NAME=
 ```
-
-### 4. Start the Bot
+### 4. Seed the trivia questions
+```
+node seedTrivia.js
+```
+ 
+### 5. Start the Bot
 ```
 node main.js
 ```
