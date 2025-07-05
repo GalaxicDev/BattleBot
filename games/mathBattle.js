@@ -57,7 +57,7 @@ function generateMathProblem(difficulty = 'easy') {
         case 'hard': {
             console.log('difficulty: hard');
             const a = getRandom(1, 5);
-            const b = getRandom(1, 4);
+            const b = getRandom(2, 5);
             const c = getRandom(10, 50);
 
             const op1 = ['+', '-', '*', '/'][getRandom(0, 3)];
@@ -183,7 +183,6 @@ async function startMathBattle(interaction, playerMap, rounds = 5) {
         });
 
         await new Promise(resolve => collector.on('end', resolve));
-
 
         for (const [id, player] of players) {
             if (userAnswers.has(id)) {
