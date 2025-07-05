@@ -4,8 +4,8 @@ const {addXp} = require("../utils/xpHandler");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('level')
-        .setDescription('View a users level and XP information.')
+        .setName('profile')
+        .setDescription('View all information about a users game progress.')
         .addUserOption(option =>
             option.setName('user')
             .setDescription('User to view level and XP for')

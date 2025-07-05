@@ -8,6 +8,7 @@ const {
 const TriviaQuestion = require('../models/triviaModel');
 const TriviaLeaderboard = require('../models/triviaLeaderboard');
 const { addXp } = require("../utils/xpHandler");
+const UserData = require("../models/userData");
 
 function getPoints(difficulty) {
     switch (difficulty) {
@@ -154,6 +155,20 @@ async function startTriviaBattle(interaction, playerMap, rounds = 5) {
 
         await entry.save();
 
+        const userData = await UserData.findOneAndUpdate(
+            { userId: id },
+            {
+                $inc: { score: player.score, gamesPlayed: 1 },
+                username: player.user.username,
+                lastGameDate: new Date()
+            },
+            { upsert: true, new: true }
+        );
+
+        if (player.score === maxScore && maxScore > 0) userData.gamesWon++;
+        else userData.gamesLost++;
+        await userData.save();
+
         await addXp(id, 3);
     }
 
@@ -168,6 +183,7 @@ async function startTriviaBattle(interaction, playerMap, rounds = 5) {
         embeds: [finalEmbed],
         components: []
     });
+    return true
 }
 
 module.exports = {

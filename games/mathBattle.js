@@ -257,6 +257,8 @@ async function startMathBattle(interaction, playerMap, rounds = 5) {
         embeds: [finalEmbed],
         components: []
     });
+
+    return true;
 }
 
 module.exports = {

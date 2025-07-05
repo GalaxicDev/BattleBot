@@ -9,7 +9,8 @@ const userDataSchema = new mongoose.Schema({
     score: { type: Number, default: 0 },
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
-    lastGameDate: { type: Date, default: Date.now }
+    lastGameDate: { type: Date, default: Date.now },
+    lastDailyReward: { type: Date, default: Date.now },
 });
 
 const UserData = mongoose.model('UserData', userDataSchema);

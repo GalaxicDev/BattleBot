@@ -146,6 +146,20 @@ async function startGeoGuessGame(interaction, playersMap, rounds = 5) {
 
         await entry.save();
 
+        const userData = await UserData.findOneAndUpdate(
+            { userId: id },
+            {
+                $inc: { score: player.score, gamesPlayed: 1 },
+                username: player.user.username,
+                lastGameDate: new Date()
+            },
+            { upsert: true, new: true }
+        );
+
+        if (player.score === maxScore && maxScore > 0) userData.gamesWon++;
+        else userData.gamesLost++;
+        await userData.save();
+
         await addXp(id, 3);
     }
 
@@ -164,6 +178,8 @@ async function startGeoGuessGame(interaction, playersMap, rounds = 5) {
         embeds: [finalEmbed],
         components: []
     });
+
+    return true
 }
 
 module.exports = {
