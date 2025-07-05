@@ -12,7 +12,7 @@ async function createGameLobby({
                                    joinLabel = 'Join Game',
                                    leaveLabel = 'Leave Lobby',
                                    onStart,
-                                   lobbyDuration = 10_000,
+                                   lobbyDuration = 60_000,
                                    minPlayers = 2,
                                }) {
     const players = new Map();

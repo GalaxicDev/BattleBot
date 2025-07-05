@@ -8,7 +8,7 @@ const {
 
 const MathGameLeaderboard = require('../models/mathGameLeaderboard');
 const UserData = require('../models/userData');
-const { addXp, getXp, getLevel, getNextLevelXp } = require('../utils/xpHandler');
+const { addXp } = require('../utils/xpHandler');
 
 function shuffle(array) {
     return array.sort(() => Math.random() - 0.5);
@@ -56,7 +56,7 @@ function generateMathProblem(difficulty = 'easy') {
 
         case 'hard': {
             console.log('difficulty: hard');
-            const a = getRandom(1, 5);
+            const a = getRandom(1, 10);
             const b = getRandom(2, 5);
             const c = getRandom(10, 50);
 
@@ -68,8 +68,8 @@ function generateMathProblem(difficulty = 'easy') {
         }
 
         case 'missing': {
-            const a = getRandom(1, 30);
-            const b = getRandom(1, 30);
+            const a = getRandom(1, 50);
+            const b = getRandom(1, 50);
             const result = a + b;
             const missingIndex = getRandom(0, 1);
             if (missingIndex === 0) {
