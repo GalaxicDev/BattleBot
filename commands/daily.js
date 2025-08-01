@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const UserData = require('../models/userData');
 const { addXp } = require("../utils/xpHandler");
-const  { startTriviaBattle } = require('../games/triviaBattle');
-const { startGeoGuessGame } = require('../games/geoGuess');
+const  { startTriviaBattle } = require('../games/triviabattle');
+const { startGeoGuessGame } = require('../games/geoguess');
 const { startMathBattle } = require('../games/mathBattle');
 
 module.exports = {

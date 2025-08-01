@@ -22,7 +22,7 @@ async function startGeoGuessGame(interaction, playersMap, rounds = 5) {
     }
 
     const totalRounds = rounds;
-    const roundDuration = 20 * 1000; // 30 seconds per round
+    const roundDuration = 25 * 1000; // 30 seconds per round
     const players = new Map();
 
     for (const [id, user] of playersMap) {
@@ -30,8 +30,13 @@ async function startGeoGuessGame(interaction, playersMap, rounds = 5) {
     }
 
     for (let round = 0; round < totalRounds; round++) {
-        const questionData = await GeoGuessQuestion.findOne().skip(Math.floor(Math.random() * await GeoGuessQuestion.countDocuments()));
-        const image_path = `https://raw.githubusercontent.com/GalaxicDev/BattleBot/refs/heads/master/utils/outlines/${questionData.image}`; // Assuming questionData.image is the path to the image
+        let questionData;
+
+        if (round === 0) {
+            questionData = await GeoGuessQuestion.findOne( ).skip(Math.floor(Math.random() * await GeoGuessQuestion.countDocuments()));
+        }
+
+        const image_path = `https://battlebotcdn.netlify.app/${questionData.image}`; // Assuming questionData.image is the path to the image
         const allAnswers = shuffle(questionData.options);
 
         console.log(questionData);
@@ -127,6 +132,7 @@ async function startGeoGuessGame(interaction, playersMap, rounds = 5) {
         });
 
         await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before next round
+        questionData = await GeoGuessQuestion.findOne( ).skip(Math.floor(Math.random() * await GeoGuessQuestion.countDocuments()));
     }
 
     const maxScore = Math.max(...Array.from(players.values()).map(player => player.score));
