@@ -17,7 +17,15 @@ module.exports = {
 
         let user = await UserData.findOne({userId: interaction.user.id})
         if (!user) {
-            return interaction.reply({ content: "There was an issue with fetching your user data, please try again.", ephemeral: true });
+            // Create new user if they don't exist yet
+            user = new UserData({
+                userId: interaction.user.id,
+                username: interaction.user.username,
+                xp: 0,
+                level: 1,
+                lastDailyReward: null
+            });
+            await user.save();
         }
 
         const currentTime = Date.now();
